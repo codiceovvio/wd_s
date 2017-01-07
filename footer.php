@@ -13,20 +13,18 @@
 
 	</div><!-- #content -->
 
-	<div class="footer-area">
-		<?php wds_page_builder_area( 'after_content' ); ?>
-	</div>
-
-	<footer id="colophon" class="site-footer">
+	<footer class="site-footer">
 		<div class="wrap">
 
 			<div class="site-info">
-				<?php _s_do_copyright_text(); ?>
-			</div><!-- .site-info -->
+				<?php echo wp_kses_post( _s_get_copyright_text() ); ?>
+			</div>
 
 		</div><!-- .wrap -->
-	</footer><!-- #colophon -->
+	</footer><!-- .site-footer -->
 </div><!-- #page -->
+
+<?php echo wp_kses_post( _s_get_mobile_navigation_menu() ); ?>
 
 <?php wp_footer(); ?>
 

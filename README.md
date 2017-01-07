@@ -1,41 +1,28 @@
 wd_s
 ===
 
-[WebDevStudios](http://webdevstudios.com) fork of Automattic's [_s](https://github.com/Automattic/_s). Used as our new project theme boilerplate. Pull requests are welcome!
+Hi. I'm a starter theme called `wd_s`, or `wdunderscores`. I'm a theme meant for hacking so don't use me as a Parent Theme. Instead, try turning me into the next, most awesome, WordPress theme out there. That's what I'm here for!
 
-# Features
-* Grunt
-* Sass
-* PostCSS
-* SassDocs
-* [Bourbon](http://bourbon.io/)
-* [Neat](http://neat.bourbon.io/)
-* Bower
-* Live reload
-* WDS Simple Page Builder support
-* [SVG support](images/svg-icons/README.md)
-* Image sprite support
-* Script linting and CSS minifcation
+I feature some of the web's most exciting technologies like: [Gulp](http://gulpjs.com/), [LibSass](http://sass-lang.com/), [PostCSS](https://github.com/postcss/postcss), [Bourbon](http://bourbon.io/), [Neat](http://neat.bourbon.io/), and [BrowserSync](https://www.browsersync.io/) to help make your development process fast and efficient. I'm also accessible, passing both WCAG 2.0AA and Section 508 standards out of the box.
 
-# Pre-Installation
+## Getting Started
 
-Basic knowledge of the command line and the following dependencies are required to use wd_s:
+### Prerequisites
 
-* [Ruby](https://www.ruby-lang.org/en/documentation/installation/)
-* [Node](http://nodejs.org/)
-* [Grunt CLI](https://www.npmjs.com/package/grunt-cli) - `npm install -g grunt-cli`
-* [Bower](http://bower.io/) - `npm install -g bower`
-* [Sass](http://sass-lang.com/install) - `gem install sass`
+Because I'm bundled with Gulp, basic knowledge of the command line and the following dependencies are required: [Node](https://nodejs.org), [Gulp CLI](https://github.com/gulpjs/gulp-cli) (`npm install -g gulp-cli`), and [Bower](https://bower.io/) (`npm install -g bower`).
 
-# Theme Setup
+### Quick Start
+If you want to keep it simple, head over to [https://wdunderscores.com](https://wdunderscores.com) and generate your `wd_s` based theme from there. You just input the name of the theme you want to create, click the "Generate" button, and you get your ready-to-awesomize starter theme.
 
-To get started, we'll download the files and then to do some finding and replacing:
+### Advanced
 
-1) [Download](https://github.com/WebDevStudios/wd_s/archive/master.zip) and extract the zip into your project's `wp-content/themes` directory and rename `wd_s` to fit your needs
+If you want to set me up manually:
+
+1) [Download](https://github.com/WebDevStudios/wd_s/archive/master.zip) and extract the zip into your `wp-content/themes` directory and rename `wd_s-master` to fit your needs.
 
 2) Find & Replace
 
-You'll need to change all instances of the names: `_s` to your project name. While this can be a tedious chore, SublimeText 3 can do a global "find & replace" allowing you to do this in under 60 seconds.
+You'll need to change all instances of the names: `_s`.
 
 * Search for: `'_s'` and replace with: `'project-name'` (inside single quotations) to capture the text domain
 * Search for: `_s_` and replace with: `project-name_` to capture all the function names
@@ -43,10 +30,12 @@ You'll need to change all instances of the names: `_s` to your project name. Whi
 * Search for (and include the leading space): <code>&nbsp;_s</code> and replace with: <code>&nbsp;Project Name</code> (with a space before it) to capture DocBlocks
 * Search for: `_s-` and replace with: `project-name-` to capture prefixed handles
 * Search for `_s.pot` and replace with: `project-name.pot` to capture translation files
+* Search for `_s.com` and replace with: `project-name.dev` to match your local development URL
+* Edit the theme information in the header of style.scss to meet your needs
 
-Once you've setup the theme, you can start the [install](https://github.com/WebDevStudios/wd_s#installation).
+## Development
 
-# Installation
+After you've installed and activated me. It's time to setup Gulp.
 
 1) From the command line, change directories to your new theme directory
 
@@ -54,38 +43,35 @@ Once you've setup the theme, you can start the [install](https://github.com/WebD
 cd /your-project/wordpress/wp-content/themes/your-theme
 ```
 
-2) Install dependencies
+2) Install theme dependencies
 
 ```bash
 npm install && bower install
 ```
+![Install and Gulp](https://dl.dropboxusercontent.com/s/cj1p6xjz51cpckq/wd_s-install.gif?dl=0)
 
-You are now ready to use wd_s!
+### Gulp Tasks
 
-# How to use Grunt
+From the command line, type any of the following to perform an action:
 
-1) From the command line, navigate to your theme
+`gulp watch` - Automatically handle changes to CSS, JS, SVGs, and image sprites. Also kicks off BrowserSync.
 
-```bash
-cd /your-project/wordpress/wp-content/themes/your-theme
-```
+`gulp icons` - Minify, concatenate, and clean SVG icons.
 
-2) Type any of the following Grunt tasks to perform an action:
+`gulp i18n` - Scan the theme and create a POT file.
 
-`grunt watch` - Automatically handle changes to CSS, JS, SVGs, and image sprites. Plus live reload!
+`gulp sass:lint` - Run Sass against WordPress code standards.
 
-`grunt javascript` - Concatenate and minify javascript files
+`gulp js:lint` - Run Javascript against WordPress code standards.
 
-`grunt styles` - Comb, compile, prefix, combine media queries, and minify CSS files
+`gulp scripts` - Concatenate and minify javascript files.
 
-`grunt imageminnewer` - Minify images
+`gulp sprites` - Generate an image sprite and the associated Sass (sprite.png).
 
-`grunt sprites` - Generate an image sprite and the associated Sass (sprite.png)
+`gulp styles` - Compile, prefix, combine media queries, and minify CSS files.
 
-`grunt icons` - Generate the SVG sprite (svg-defs.svg)
+`gulp` - Runs the following tasks at the same time: i18n, icons, scripts, styles, sprites.
 
-`grunt i18n` - Generate a translation file
+## Contributing and Support
 
-`grunt sassdoc` - Re-generate the SassDocs
-
-`grunt` - Do all the above tasks at the same time
+Your contributions and [support tickets](https://github.com/WebDevStudios/wd_s/issues) are welcome. Please see our [guidelines](https://github.com/WebDevStudios/wd_s/blob/master/CONTRIBUTING.md) before submitting a pull request.
