@@ -7,7 +7,7 @@
 .entry-content,
 .comment-content {
 	// WP smiley
-	img.wp-smiley {
+	.wp-smiley {
 		@include margin-padding-reset;
 
 		border: none;
@@ -32,7 +32,7 @@ img {
 	margin: 0 0 rem(24) 0;
 	max-width: 100%;
 
-	img[class*="wp-image-"] {
+	img[class*='wp-image-'] {
 		display: block;
 		margin: 0 auto;
 	} // img[class*="wp-image-"]
@@ -133,6 +133,20 @@ img {
 	} // embed, object, iframe
 } // .fluid-embed
 
+// Jetpack now auto wraps all oembed videos in a <div>
+// Let's make it full-width in the content cuz it looks cool.
+.jetpack-video-wrapper {
+	margin-left: rem(-35);
+	max-width: calc(100% + 70px);
+	width: calc(100% + 70px);
+
+	@include media($tablet-landscape) {
+		margin-left: rem(-115);
+		max-width: calc(100% + 230px);
+		width: calc(100% + 230px);
+	}
+} // .jetpack-video-wrapper
+
 // Center image background
 .image-as-background {
 	background-position: center center;
@@ -140,14 +154,14 @@ img {
 	background-size: cover;
 } // .image-as-background
 
-// Video as background
+/// Video as background
 .video-as-background {
-	@include size(100% 100%);
-
 	display: block;
+	height: auto; // IE/Edge browsers need this to set the video to full-width.
 	object-fit: cover;
 	object-position: center top;
 	position: absolute;
+	width: 100%;
 	z-index: 1;
 } // .video-as-background
 

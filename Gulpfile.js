@@ -8,6 +8,7 @@ const concat = require( 'gulp-concat' );
 const cssnano = require( 'gulp-cssnano' );
 const del = require( 'del' );
 const eslint = require( 'gulp-eslint' );
+const fs = require( 'fs' );
 const gulp = require( 'gulp' );
 const gutil = require( 'gulp-util' );
 const imagemin = require( 'gulp-imagemin' );
@@ -19,6 +20,7 @@ const postcss = require( 'gulp-postcss' );
 const reload = browserSync.reload;
 const rename = require( 'gulp-rename' );
 const sass = require( 'gulp-sass' );
+const sassdoc = require( 'sassdoc' );
 const sassLint = require( 'gulp-sass-lint' );
 const sort = require( 'gulp-sort' );
 const sourcemaps = require( 'gulp-sourcemaps' );
@@ -36,14 +38,14 @@ const paths = {
 	'php': [ './*.php', './**/*.php' ],
 	'sass': 'assets/sass/**/*.scss',
 	'concat_scripts': 'assets/scripts/concat/*.js',
-	'scripts': [ 'assets/scripts/*.js', '!assets/scripts/*.min.js', '!assets/scripts/customizer.js' ],
+	'scripts': [ 'assets/scripts/*.js', '!assets/scripts/*.min.js' ],
 	'sprites': 'assets/images/sprites/*.png'
 };
 
 /**
  * Handle errors and alert the user.
  */
-function handleErrors () {
+function handleErrors() {
 	const args = Array.prototype.slice.call( arguments );
 
 	notify.onError( {
@@ -154,10 +156,11 @@ gulp.task( 'svg', [ 'clean:icons' ], () =>
 
 		// Clean up the <symbol> by removing the following cruft...
 		.pipe( cheerio( {
-			'run': function ( $, file ) {
+			'run': function( $, file ) {
 				$( 'svg' ).attr( 'style', 'display:none' );
 				$( '[fill]' ).removeAttr( 'fill' );
 				$( 'path' ).removeAttr( 'class' );
+				$( 'title' ).remove();
 			},
 			'parserOptions': {'xmlMode': true}
 		} ) )
@@ -187,7 +190,7 @@ gulp.task( 'imagemin', () =>
  * Delete the sprites.png before rebuilding sprite.
  */
 gulp.task( 'clean:sprites', () => {
-	del( [ 'assets/images/sprites.png' ] )
+	del( [ 'assets/images/sprites.png' ] );
 } );
 
 /**
@@ -195,7 +198,7 @@ gulp.task( 'clean:sprites', () => {
  *
  * https://www.npmjs.com/package/gulp.spritesmith
  */
-gulp.task( 'spritesmith', [ 'clean:sprites' ], () =>
+gulp.task( 'spritesmith', () =>
 	gulp.src( paths.sprites )
 		.pipe( plumber( {'errorHandler': handleErrors} ) )
 		.pipe( spritesmith( {
@@ -228,7 +231,13 @@ gulp.task( 'concat', () =>
 
 		// Convert ES6+ to ES2015.
 		.pipe( babel( {
-			presets: [ 'es2015' ]
+			'presets': [
+				[ 'env', {
+					'targets': {
+						'browsers': [ 'last 2 versions' ]
+					}
+				} ]
+			]
 		} ) )
 
 		// Concatenate partials into a single script.
@@ -249,7 +258,17 @@ gulp.task( 'concat', () =>
   */
 gulp.task( 'uglify', [ 'concat' ], () =>
 	gulp.src( paths.scripts )
+		.pipe( plumber( {'errorHandler': handleErrors} ) )
 		.pipe( rename( {'suffix': '.min'} ) )
+		.pipe( babel( {
+			'presets': [
+				[ 'env', {
+					'targets': {
+						'browsers': [ 'last 2 versions' ]
+					}
+				} ]
+			]
+		} ) )
 		.pipe( uglify( {
 			'mangle': false
 		} ) )
@@ -274,13 +293,9 @@ gulp.task( 'wp-pot', [ 'clean:pot' ], () =>
 		.pipe( sort() )
 		.pipe( wpPot( {
 			'domain': '_s',
-			'destFile': '_s.pot',
-			'package': '_s',
-			'bugReport': 'http://_s.com',
-			'lastTranslator': 'John Doe <mail@_s.com>',
-			'team': 'Team <mail@_s.com>'
+			'package': '_s'
 		} ) )
-		.pipe( gulp.dest( 'languages/' ) )
+		.pipe( gulp.dest( 'languages/_s.pot' ) )
 );
 
 /**
@@ -321,17 +336,32 @@ gulp.task( 'js:lint', () =>
 );
 
 /**
+ * Sass docs.
+ *
+ * http://sassdoc.com/getting-started/
+ */
+gulp.task( 'sassdoc', function() {
+	let options = {
+		dest: 'docs',
+		verbose: true
+	};
+
+	return gulp.src( 'assets/sass/**/*.scss' )
+		.pipe( sassdoc( options ) );
+} );
+
+/**
  * Process tasks and reload browsers on file changes.
  *
  * https://www.npmjs.com/package/browser-sync
  */
-gulp.task( 'watch', function () {
+gulp.task( 'watch', function() {
 
 	// Kick off BrowserSync.
 	browserSync( {
 		'open': false,             // Open project in a new tab?
 		'injectChanges': true,     // Auto inject changes instead of full reload.
-		'proxy': 'testing.dev',    // Use http://_s.com:3000 to use BrowserSync.
+		'proxy': 'testing.dev',         // Use http://_s.dev:3000 to use BrowserSync.
 		'watchOptions': {
 			'debounceDelay': 1000  // Wait 1 second before injecting.
 		}
@@ -356,4 +386,5 @@ gulp.task( 'scripts', [ 'uglify' ] );
 gulp.task( 'styles', [ 'cssnano' ] );
 gulp.task( 'sprites', [ 'spritesmith' ] );
 gulp.task( 'lint', [ 'sass:lint', 'js:lint' ] );
-gulp.task( 'default', [ 'sprites', 'i18n', 'icons', 'styles', 'scripts', 'imagemin'] );
+gulp.task( 'docs', [ 'sassdoc' ] );
+gulp.task( 'default', [ 'sprites', 'i18n', 'icons', 'styles', 'scripts', 'imagemin' ] );

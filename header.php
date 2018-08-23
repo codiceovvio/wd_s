@@ -19,6 +19,7 @@
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
 
 	<?php wp_head(); ?>
+
 </head>
 
 <body <?php body_class(); ?>>
@@ -26,32 +27,41 @@
 	<a class="skip-link screen-reader-text" href="#main"><?php esc_html_e( 'Skip to content', '_s' ); ?></a>
 
 	<header class="site-header">
-		<div class="wrap">
 
-			<div class="site-branding">
-				<?php if ( is_front_page() && is_home() ) : ?>
-					<h1 class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
-				<?php else : ?>
-					<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
-				<?php endif;
+		<div class="site-branding">
 
-				$description = get_bloginfo( 'description', 'display' ); ?>
-				<?php if ( $description || is_customize_preview() ) : ?>
-					<p class="site-description"><?php echo $description; // WPCS: xss ok. ?></p>
-				<?php endif; ?>
-			</div><!-- .site-branding -->
+			<?php the_custom_logo(); ?>
 
-			<nav id="site-navigation" class="main-navigation">
-				<?php
-					wp_nav_menu( array(
-						'theme_location' => 'primary',
-						'menu_id'        => 'primary-menu',
-						'menu_class'     => 'menu dropdown',
-					) );
-				?>
-			</nav><!-- #site-navigation -->
+			<?php if ( is_front_page() && is_home() ) : ?>
+				<h1 class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
+			<?php else : ?>
+				<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
+			<?php endif; ?>
 
-		</div><!-- .wrap -->
-	</header><!-- .site-header -->
+			<?php
+			$description = get_bloginfo( 'description', 'display' );
+			if ( $description || is_customize_preview() ) :
+			?>
+				<p class="site-description"><?php echo esc_html( $description ); ?></p>
+			<?php endif; ?>
+		</div><!-- .site-branding -->
+
+		<?php _s_display_header_button(); ?>
+
+		<button type="button" class="off-canvas-open" aria-expanded="false" aria-label="<?php esc_html_e( 'Open Menu', '_s' ); ?>">
+			<span class="hamburger"></span>
+		</button>
+
+		<nav id="site-navigation" class="main-navigation">
+			<?php
+				wp_nav_menu( array(
+					'theme_location' => 'primary',
+					'menu_id'        => 'primary-menu',
+					'menu_class'     => 'menu dropdown',
+				) );
+			?>
+		</nav><!-- #site-navigation -->
+
+	</header><!-- .site-header-->
 
 	<div id="content" class="site-content">

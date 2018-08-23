@@ -17,7 +17,8 @@ if ( ! function_exists( '_s_posted_on' ) ) :
 			$time_string = '<time class="entry-date published" datetime="%1$s">%2$s</time><time class="updated" datetime="%3$s">%4$s</time>';
 		}
 
-		$time_string = sprintf( $time_string,
+		$time_string = sprintf(
+			$time_string,
 			esc_attr( get_the_date( 'c' ) ),
 			esc_html( get_the_date() ),
 			esc_attr( get_the_modified_date( 'c' ) ),
@@ -25,11 +26,13 @@ if ( ! function_exists( '_s_posted_on' ) ) :
 		);
 
 		$posted_on = sprintf(
+			/* translators: the date the post was published */
 			esc_html_x( 'Posted on %s', 'post date', '_s' ),
 			'<a href="' . esc_url( get_permalink() ) . '" rel="bookmark">' . $time_string . '</a>'
 		);
 
 		$byline = sprintf(
+			/* translators: the post author */
 			esc_html_x( 'by %s', 'post author', '_s' ),
 			'<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>'
 		);
@@ -49,12 +52,14 @@ if ( ! function_exists( '_s_entry_footer' ) ) :
 			/* translators: used between list items, there is a space after the comma */
 			$categories_list = get_the_category_list( esc_html__( ', ', '_s' ) );
 			if ( $categories_list && _s_categorized_blog() ) {
+				/* translators: the post category */
 				printf( '<span class="cat-links">' . esc_html__( 'Posted in %1$s', '_s' ) . '</span>', $categories_list ); // WPCS: XSS OK.
 			}
 
 			/* translators: used between list items, there is a space after the comma */
 			$tags_list = get_the_tag_list( '', esc_html__( ', ', '_s' ) );
 			if ( $tags_list ) {
+				/* translators: the post tags */
 				printf( '<span class="tags-links">' . esc_html__( 'Tagged %1$s', '_s' ) . '</span>', $tags_list ); // WPCS: XSS OK.
 			}
 		}
@@ -78,16 +83,19 @@ if ( ! function_exists( '_s_entry_footer' ) ) :
 endif;
 
 /**
+ * Display SVG Markup.
+ *
+ * @param array $args The parameters needed to get the SVG.
+ */
+function _s_display_svg( $args = array() ) {
+	echo _s_get_svg( $args ); // WPCS XSS Ok.
+}
+
+/**
  * Return SVG markup.
  *
- * @param  array  $args {
- *     Parameters needed to display an SVG.
- *
- *     @param string $icon Required. Use the icon filename, e.g. "facebook-square".
- *     @param string $title Optional. SVG title, e.g. "Facebook".
- *     @param string $desc Optional. SVG description, e.g. "Share this post on Facebook".
- * }
- * @return string SVG markup.
+ * @param array $args The parameters needed to display the SVG.
+ * @return string
  */
 function _s_get_svg( $args = array() ) {
 
@@ -103,9 +111,12 @@ function _s_get_svg( $args = array() ) {
 
 	// Set defaults.
 	$defaults = array(
-		'icon'  => '',
-		'title' => '',
-		'desc'  => '',
+		'icon'   => '',
+		'title'  => '',
+		'desc'   => '',
+		'fill'   => '',
+		'height' => '',
+		'width'  => '',
 	);
 
 	// Parse args.
@@ -114,51 +125,82 @@ function _s_get_svg( $args = array() ) {
 	// Figure out which title to use.
 	$title = ( $args['title'] ) ? $args['title'] : $args['icon'];
 
-	// Set aria hidden.
-	$aria_hidden = ' aria-hidden="true"';
+	// Generate random IDs for the title and description.
+	$random_number = rand( 0, 99999 );
+	$title_id      = 'title-' . sanitize_title( $title ) . '-' . $random_number;
+	$desc_id       = 'desc-' . sanitize_title( $title ) . '-' . $random_number;
 
 	// Set ARIA.
+	$aria_hidden     = ' aria-hidden="true"';
 	$aria_labelledby = '';
+
 	if ( $args['title'] && $args['desc'] ) {
-		$aria_labelledby = ' aria-labelledby="title-ID desc-ID"';
-		$aria_hidden = '';
+		$aria_labelledby = ' aria-labelledby="' . $title_id . ' ' . $desc_id . '"';
+		$aria_hidden     = '';
 	}
 
-	// Begin SVG markup.
-	$svg = '<svg class="icon icon-' . esc_attr( $args['icon'] ) . '"' . $aria_hidden . $aria_labelledby . ' role="img">';
+	// Set SVG parameters.
+	$fill   = ( $args['fill'] ) ? ' fill="' . $args['fill'] . '"' : '';
+	$height = ( $args['height'] ) ? ' height="' . $args['height'] . '"' : '';
+	$width  = ( $args['width'] ) ? ' width="' . $args['width'] . '"' : '';
 
-	// Add title markup.
-	$svg .= '<title>' . esc_html( $title ) . '</title>';
+	// Start a buffer...
+	ob_start();
+	?>
 
-	// If there is a description, display it.
-	if ( $args['desc'] ) {
-		$svg .= '<desc>' . esc_html( $args['desc'] ) . '</desc>';
-	}
+	<svg
+	<?php
+		echo force_balance_tags( $height ); // WPCS XSS OK.
+		echo force_balance_tags( $width ); // WPCS XSS OK.
+		echo force_balance_tags( $fill ); // WPCS XSS OK.
+	?>
+		class="icon icon-<?php echo esc_attr( $args['icon'] ); ?>"
+	<?php
+		echo force_balance_tags( $aria_hidden ); // WPCS XSS OK.
+		echo force_balance_tags( $aria_labelledby ); // WPCS XSS OK.
+	?>
+		role="img">
+		<title id="<?php echo esc_attr( $title_id ); ?>">
+			<?php echo esc_html( $title ); ?>
+		</title>
 
-	// Use absolute path in the Customizer so that icons show up in there.
-	if ( is_customize_preview() ) {
-		$svg .= '<use xlink:href="' . get_parent_theme_file_uri( '/assets/images/svg-icons.svg#icon-' . esc_html( $args['icon'] ) ) . '"></use>';
-	} else {
-		$svg .= '<use xlink:href="#icon-' . esc_html( $args['icon'] ) . '"></use>';
-	}
+		<?php
+		// Display description if available.
+		if ( $args['desc'] ) :
+		?>
+			<desc id="<?php echo esc_attr( $desc_id ); ?>">
+				<?php echo esc_html( $args['desc'] ); ?>
+			</desc>
+		<?php endif; ?>
 
-	$svg .= '</svg>';
+		<?php
+		// Use absolute path in the Customizer so that icons show up in there.
+		if ( is_customize_preview() ) :
+		?>
+			<use xlink:href="<?php echo esc_url( get_parent_theme_file_uri( '/assets/images/svg-icons.svg#icon-' . esc_html( $args['icon'] ) ) ); ?>"></use>
+		<?php else : ?>
+			<use xlink:href="#icon-<?php echo esc_html( $args['icon'] ); ?>"></use>
+		<?php endif; ?>
 
-	return $svg;
+	</svg>
+
+	<?php
+	// Get the buffer and return.
+	return ob_get_clean();
 }
 
 /**
  * Trim the title length.
  *
  * @param array $args Parameters include length and more.
- * @return string        The shortened excerpt.
+ * @return string
  */
 function _s_get_the_title( $args = array() ) {
 
 	// Set defaults.
 	$defaults = array(
-		'length'  => 12,
-		'more'    => '...',
+		'length' => 12,
+		'more'   => '...',
 	);
 
 	// Parse args.
@@ -169,29 +211,10 @@ function _s_get_the_title( $args = array() ) {
 }
 
 /**
- * Customize "Read More" string on <!-- more --> with the_content();
- */
-function _s_content_more_link() {
-	return ' <a class="more-link" href="' . get_permalink() . '">' . esc_html__( 'Read More', '_s' ) . '...</a>';
-}
-add_filter( 'the_content_more_link', '_s_content_more_link' );
-
-/**
- * Customize the [...] on the_excerpt();
- *
- * @param string $more The current $more string.
- * @return string Replace with "Read More..."
- */
-function _s_excerpt_more( $more ) {
-	return sprintf( ' <a class="more-link" href="%1$s">%2$s</a>', get_permalink( get_the_ID() ), esc_html__( 'Read more...', '_s' ) );
-}
-add_filter( 'excerpt_more', '_s_excerpt_more' );
-
-/**
  * Limit the excerpt length.
  *
  * @param array $args Parameters include length and more.
- * @return string The shortened excerpt.
+ * @return string
  */
 function _s_get_the_excerpt( $args = array() ) {
 
@@ -211,74 +234,75 @@ function _s_get_the_excerpt( $args = array() ) {
 /**
  * Echo an image, no matter what.
  *
- * @param string $size The image size you want to display.
+ * @param string $size The image size to display. Default is thumbnail.
+ * @return string
  */
-function _s_get_post_image( $size = 'thumbnail' ) {
+function _s_display_post_image( $size = 'thumbnail' ) {
 
-	// If featured image is present, use that.
+	// If post has a featured image, display it.
 	if ( has_post_thumbnail() ) {
-		return the_post_thumbnail( $size );
+		the_post_thumbnail( $size );
+		return false;
 	}
 
-	// Check for any attached image.
-	$media = get_attached_media( 'image', get_the_ID() );
-	$media = current( $media );
+	$attached_image_url = _s_get_attached_image_url( $size );
 
-	// Set up default image path.
-	$media_url = get_stylesheet_directory_uri() . '/assets/images/placeholder.png';
-
-	// If an image is present, then use it.
-	if ( is_array( $media ) && 0 < count( $media ) ) {
-		$media_url = ( 'thumbnail' === $size ) ? wp_get_attachment_thumb_url( $media->ID ) : wp_get_attachment_url( $media->ID );
-	}
-
-	// Start the markup.
-	ob_start(); ?>
-
-	<img src="<?php echo esc_url( $media_url ); ?>" class="attachment-thumbnail wp-post-image" alt="<?php echo esc_html( get_the_title() ); ?>"/>
-
+	// Else, display an attached image or placeholder.
+	?>
+	<img src="<?php echo esc_url( $attached_image_url ); ?>" class="attachment-thumbnail wp-post-image" alt="<?php echo esc_html( get_the_title() ); ?>"/>
 	<?php
-	return ob_get_clean();
 }
 
 /**
- * Return an image URI, no matter what.
+ * Return an image URL, no matter what.
  *
- * @param  string $size The image size you want to return.
- * @return string The image URI.
+ * @param  string $size The image size to return. Default is thumbnail.
+ * @return string
  */
-function _s_get_post_image_uri( $size = 'thumbnail' ) {
+function _s_get_post_image_url( $size = 'thumbnail' ) {
 
-	// If featured image is present, use that.
+	// If post has a featured image, return its URL.
 	if ( has_post_thumbnail() ) {
 
 		$featured_image_id = get_post_thumbnail_id( get_the_ID() );
-		$media = wp_get_attachment_image_src( $featured_image_id, $size );
+		$media             = wp_get_attachment_image_src( $featured_image_id, $size );
 
 		if ( is_array( $media ) ) {
 			return current( $media );
 		}
 	}
 
+	// Else, return the URL for an attached image or placeholder.
+	return _s_get_attached_image_url( $size );
+}
+
+/**
+ * Get the URL of an image that's attached to the current post, else a placeholder image URL.
+ *
+ * @param  string $size The image size to return. Default is thumbnail.
+ * @return string
+ */
+function _s_get_attached_image_url( $size = 'thumbnail' ) {
+
 	// Check for any attached image.
 	$media = get_attached_media( 'image', get_the_ID() );
 	$media = current( $media );
 
-	// Set up default image path.
-	$media_url = get_stylesheet_directory_uri() . '/assets/images/placeholder.png';
-
-	// If an image is present, then use it.
-	if ( is_array( $media ) && 0 < count( $media ) ) {
-		$media_url = ( 'thumbnail' === $size ) ? wp_get_attachment_thumb_url( $media->ID ) : wp_get_attachment_url( $media->ID );
+	// If an image is attached, return its URL.
+	if ( is_array( $media ) && $media ) {
+		return 'thumbnail' === $size ? wp_get_attachment_thumb_url( $media->ID ) : wp_get_attachment_url( $media->ID );
 	}
 
-	return $media_url;
+	// Return URL to a placeholder image as a fallback.
+	return get_stylesheet_directory_uri() . '/assets/images/placeholder.png';
 }
 
 /**
  * Echo the copyright text saved in the Customizer.
+ *
+ * @return bool
  */
-function _s_get_copyright_text() {
+function _s_display_copyright_text() {
 
 	// Grab our customizer settings.
 	$copyright_text = get_theme_mod( '_s_copyright_text' );
@@ -288,114 +312,169 @@ function _s_get_copyright_text() {
 		return false;
 	}
 
-	// Echo the text.
-	echo '<span class="copyright-text">' . wp_kses_post( $copyright_text ) . '</span>';
+	?>
+	<span class="copyright-text"><?php echo wp_kses_post( $copyright_text ); ?></span>
+	<?php
 }
 
 /**
- * Build social sharing icons.
+ * Get the Twitter social sharing URL for the current page.
  *
  * @return string
  */
-function _s_get_social_share() {
-
-	// Build the sharing URLs.
-	$twitter_url  = 'https://twitter.com/share?text=' . rawurlencode( html_entity_decode( get_the_title() ) ) . '&amp;url=' . rawurlencode( get_the_permalink() );
-	$facebook_url = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( get_the_permalink() );
-	$linkedin_url = 'https://www.linkedin.com/shareArticle?title=' . rawurlencode( html_entity_decode( get_the_title() ) ) . '&amp;url=' . rawurlencode( get_the_permalink() );
-
-	// Start the markup.
-	ob_start(); ?>
-	<div class="social-share">
-		<h5 class="social-share-title"><?php esc_html_e( 'Share This', '_s' ); ?></h5>
-		<ul class="social-icons menu menu-horizontal">
-			<li class="social-icon">
-				<a href="<?php echo esc_url( $twitter_url ); ?>" onclick="window.open(this.href, 'targetWindow', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, top=150, left=0, width=600, height=300' ); return false;">
-					<?php echo _s_get_svg( array( 'icon' => 'twitter-square', 'title' => 'Twitter', 'desc' => __( 'Share on Twitter', '_s' ) ) ); // WPCS: XSS ok. ?>
-					<span class="screen-reader-text"><?php esc_html_e( 'Share on Twitter', '_s' ); ?></span>
-				</a>
-			</li>
-			<li class="social-icon">
-				<a href="<?php echo esc_url( $facebook_url ); ?>" onclick="window.open(this.href, 'targetWindow', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, top=150, left=0, width=600, height=300' ); return false;">
-					<?php echo _s_get_svg( array( 'icon' => 'facebook-square', 'title' => 'Facebook', 'desc' => __( 'Share on Facebook', '_s' ) ) ); // WPCS: XSS ok. ?>
-					<span class="screen-reader-text"><?php esc_html_e( 'Share on Facebook', '_s' ); ?></span>
-				</a>
-			</li>
-			<li class="social-icon">
-				<a href="<?php echo esc_url( $linkedin_url ); ?>" onclick="window.open(this.href, 'targetWindow', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, top=150, left=0, width=475, height=505' ); return false;">
-					<?php echo _s_get_svg( array( 'icon' => 'linkedin-square', 'title' => 'LinkedIn', 'desc' => __( 'Share on LinkedIn', '_s' ) ) ); // WPCS: XSS ok. ?>
-					<span class="screen-reader-text"><?php esc_html_e( 'Share on LinkedIn', '_s' ); ?></span>
-				</a>
-			</li>
-		</ul>
-	</div><!-- .social-share -->
-
-	<?php
-	return ob_get_clean();
+function _s_get_twitter_share_url() {
+	return add_query_arg(
+		array(
+			'text' => rawurlencode( html_entity_decode( get_the_title() ) ),
+			'url'  => rawurlencode( get_the_permalink() ),
+		), 'https://twitter.com/share'
+	);
 }
 
 /**
- * Output the mobile navigation
- */
-function _s_get_mobile_navigation_menu() {
-
-	// Figure out which menu we're pulling.
-	$mobile_menu = has_nav_menu( 'mobile' ) ? 'mobile' : 'primary';
-
-	// Start the markup.
-	ob_start();
-	?>
-
-	<nav id="mobile-menu" class="mobile-nav-menu">
-		<button class="close-mobile-menu"><span class="screen-reader-text"><?php echo esc_html_e( 'Close menu', '_s' ); ?></span><?php echo _s_get_svg( array( 'icon' => 'close' ) ); // WPCS: XSS ok. ?></button>
-		<?php
-			wp_nav_menu( array(
-				'theme_location' => $mobile_menu,
-				'menu_id'        => 'primary-menu',
-				'menu_class'     => 'menu dropdown mobile-nav',
-				'link_before'    => '<span>',
-				'link_after'     => '</span>',
-			) );
-		?>
-	</nav>
-	<?php
-	return ob_get_clean();
-}
-
-/**
- * Retrieve the social links saved in the customizer
+ * Get the Facebook social sharing URL for the current page.
  *
- * @return mixed HTML output of social links
+ * @return string
  */
-function _s_get_social_network_links() {
+function _s_get_facebook_share_url() {
+	return add_query_arg( 'u', rawurlencode( get_the_permalink() ), 'https://www.facebook.com/sharer/sharer.php' );
+}
+
+/**
+ * Get the LinkedIn social sharing URL for the current page.
+ *
+ * @return string
+ */
+function _s_get_linkedin_share_url() {
+	return add_query_arg(
+		array(
+			'title' => rawurlencode( html_entity_decode( get_the_title() ) ),
+			'url'   => rawurlencode( get_the_permalink() ),
+		), 'https://www.linkedin.com/shareArticle'
+	);
+}
+
+/**
+ * Display the social links saved in the customizer.
+ */
+function _s_display_social_network_links() {
 
 	// Create an array of our social links for ease of setup.
 	// Change the order of the networks in this array to change the output order.
 	$social_networks = array( 'facebook', 'googleplus', 'instagram', 'linkedin', 'twitter' );
 
-	// Kickoff our output buffer.
-	ob_start(); ?>
-
+	?>
 	<ul class="social-icons">
-	<?php
-	// Loop through our network array.
-	foreach ( $social_networks as $network ) :
+		<?php
+		// Loop through our network array.
+		foreach ( $social_networks as $network ) :
 
-		// Look for the social network's URL.
-		$network_url = get_theme_mod( '_s_' . $network . '_link' );
+			// Look for the social network's URL.
+			$network_url = get_theme_mod( '_s_' . $network . '_link' );
 
-		// Only display the list item if a URL is set.
-		if ( isset( $network_url ) && ! empty( $network_url ) ) : ?>
-			<li class="social-icon <?php echo esc_attr( $network ); ?>">
-				<a href="<?php echo esc_url( $network_url ); ?>">
-					<?php echo _s_get_svg( array( 'icon' => $network . '-square', 'title' => sprintf( __( 'Link to %s', '_s' ), ucwords( esc_html( $network ) ) ) ) ); // WPCS: XSS ok. ?>
-					<span class="screen-reader-text"><?php echo sprintf( __( 'Link to %s', '_s' ), ucwords( esc_html( $network ) ) ); // WPCS: XSS ok. ?></span>
-				</a>
-			</li><!-- .social-icon -->
-		<?php endif;
-	endforeach; ?>
+			// Only display the list item if a URL is set.
+			if ( ! empty( $network_url ) ) :
+			?>
+				<li class="social-icon <?php echo esc_attr( $network ); ?>">
+					<a href="<?php echo esc_url( $network_url ); ?>">
+						<?php
+						_s_display_svg(
+							array(
+								'icon' => $network . '-square',
+							)
+						);
+						?>
+						<span class="screen-reader-text">
+						<?php
+							echo /* translators: the social network name */ sprintf( esc_html_e( 'Link to %s', '_s' ), ucwords( esc_html( $network ) ) ); // WPCS: XSS OK.
+						?>
+						</span>
+					</a>
+				</li><!-- .social-icon -->
+			<?php
+			endif;
+		endforeach;
+		?>
 	</ul><!-- .social-icons -->
-
 	<?php
-	return ob_get_clean();
+}
+
+/**
+ * Display a card.
+ *
+ * @param array $args Card defaults.
+ */
+function _s_display_card( $args = array() ) {
+
+	// Setup defaults.
+	$defaults = array(
+		'title' => '',
+		'image' => '',
+		'text'  => '',
+		'url'   => '',
+		'class' => '',
+	);
+
+	// Parse args.
+	$args = wp_parse_args( $args, $defaults );
+	?>
+	<div class="<?php echo esc_attr( $args['class'] ); ?> card">
+
+		<?php if ( $args['image'] ) : ?>
+			<a href="<?php echo esc_url( $args['url'] ); ?>" tabindex="-1"><img class="card-image" src="<?php echo esc_url( $args['image'] ); ?>" alt="<?php echo esc_attr( $args['title'] ); ?>"></a>
+		<?php endif; ?>
+
+		<div class="card-section">
+
+		<?php if ( $args['title'] ) : ?>
+			<h3 class="card-title"><a href="<?php echo esc_url( $args['url'] ); ?>"><?php echo esc_html( $args['title'] ); ?></a></h3>
+		<?php endif; ?>
+
+		<?php if ( $args['text'] ) : ?>
+			<p class="card-text"><?php echo esc_html( $args['text'] ); ?></p>
+		<?php endif; ?>
+
+		<?php if ( $args['url'] ) : ?>
+			<button type="button" class="button button-card" onclick="location.href='<?php echo esc_url( $args['url'] ); ?>'"><?php esc_html_e( 'Read More', '_s' ); ?></button>
+		<?php endif; ?>
+
+		</div><!-- .card-section -->
+	</div><!-- .card -->
+	<?php
+}
+
+/**
+ * Display header button.
+ *
+ * @author Corey Collins
+ * @return string
+ */
+function _s_display_header_button() {
+
+	// Get our button setting.
+	$button_setting = get_theme_mod( '_s_header_button' );
+
+	// If we have no button displayed, don't display the markup.
+	if ( 'none' === $button_setting ) {
+		return '';
+	}
+
+	// Grab our button and text values.
+	$button_url  = get_theme_mod( '_s_header_button_url' );
+	$button_text = get_theme_mod( '_s_header_button_text' );
+	?>
+	<div class="site-header-action">
+		<?php
+		// If we're doing a URL, just make this LOOK like a button but be a link.
+		if ( 'link' === $button_setting && $button_url ) :
+		?>
+			<a href="<?php echo esc_url( $button_url ); ?>" class="button button-link"><?php echo esc_html( $button_text ?: __( 'More Information', '_s' ) ); ?></a>
+		<?php else : ?>
+			<button type="button" class="cta-button" aria-expanded="false" aria-label="<?php esc_html_e( 'Search', '_s' ); ?>">
+				<?php esc_html_e( 'Search', '_s' ); ?>
+			</button>
+			<?php get_search_form(); ?>
+		<?php endif; ?>
+	</div><!-- .header-trigger -->
+	<?php
 }

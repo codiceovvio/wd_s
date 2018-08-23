@@ -43,11 +43,12 @@ if ( ! function_exists( '_s_setup' ) ) :
 		 * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
 		 */
 		add_theme_support( 'post-thumbnails' );
+		add_image_size( 'full-width', 1920, 1080, false );
 
-		// This theme uses wp_nav_menu() in one location.
+		// Register navigation menus.
 		register_nav_menus( array(
 			'primary' => esc_html__( 'Primary Menu', '_s' ),
-			'mobile'  => esc_html__( 'Optional Mobile Menu', '_s' ),
+			'mobile'  => esc_html__( 'Mobile Menu', '_s' ),
 		) );
 
 		/**
@@ -68,6 +69,17 @@ if ( ! function_exists( '_s_setup' ) ) :
 			'default-image' => '',
 		) ) );
 
+		// Custom logo support.
+		add_theme_support( 'custom-logo', array(
+			'height'      => 250,
+			'width'       => 500,
+			'flex-height' => true,
+			'flex-width'  => true,
+			'header-text' => array( 'site-title', 'site-description' ),
+		) );
+
+		// Add theme support for selective refresh for widgets.
+		add_theme_support( 'customize-selective-refresh-widgets' );
 	}
 endif; // _s_setup
 add_action( 'after_setup_theme', '_s_setup' );
@@ -103,21 +115,16 @@ function _s_widgets_init() {
 		register_sidebar( array(
 			'name'          => $sidebar_name,
 			'id'            => $sidebar_id,
-			'description'   => sprintf( esc_html__( 'Widget area for %s', '_s' ), $sidebar_name ),
+			'description'   => /* translators: the sidebar name */ sprintf( esc_html__( 'Widget area for %s', '_s' ), $sidebar_name ),
 			'before_widget' => '<aside class="widget %2$s">',
 			'after_widget'  => '</aside>',
-			'before_title'  => '<h3 class="widget-title">',
-			'after_title'   => '</h3>',
+			'before_title'  => '<h2 class="widget-title">',
+			'after_title'   => '</h2>',
 		) );
 	}
 
 }
 add_action( 'widgets_init', '_s_widgets_init' );
-
-/**
- * Implement the Custom Header feature.
- */
-require get_template_directory() . '/inc/custom-header.php';
 
 /**
  * Custom template tags for this theme.
@@ -130,11 +137,6 @@ require get_template_directory() . '/inc/template-tags.php';
 require get_template_directory() . '/inc/extras.php';
 
 /**
- * Customizer additions.
- */
-require get_template_directory() . '/inc/customizer.php';
-
-/**
  * Load Jetpack compatibility file.
  */
 require get_template_directory() . '/inc/jetpack.php';
@@ -143,3 +145,28 @@ require get_template_directory() . '/inc/jetpack.php';
  * Load styles and scripts.
  */
 require get_template_directory() . '/inc/scripts.php';
+
+/**
+ * Load custom ACF features.
+ */
+require get_template_directory() . '/inc/acf.php';
+
+/**
+ * Load custom filters and hooks.
+ */
+require get_template_directory() . '/inc/hooks.php';
+
+/**
+ * Load custom queries.
+ */
+require get_template_directory() . '/inc/queries.php';
+
+/**
+ * Customizer additions.
+ */
+require get_template_directory() . '/inc/customizer/customizer.php';
+
+/**
+ * Scaffolding Library.
+ */
+require get_template_directory() . '/inc/scaffolding.php';

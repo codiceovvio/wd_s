@@ -1,42 +1,66 @@
 /**
- * File customizer.js.
+ * Show or hide the URL field in the Header Button options when the select option is changed.
  *
- * Theme Customizer enhancements for a better user experience.
- *
- * Contains handlers to make Theme Customizer preview reload changes asynchronously.
+ * @author Corey Collins
  */
+window.CustomizerHeaderOptions = {};
+( function( window, $, app ) {
 
-( function( $ ) {
+	// Private variable
+	var fooVariable = 'foo';
 
-	// Site title and description.
-	wp.customize( 'blogname', function( value ) {
-		value.bind( function( to ) {
-			$( '.site-title a' ).text( to );
-		} );
-	} );
-	wp.customize( 'blogdescription', function( value ) {
-		value.bind( function( to ) {
-			$( '.site-description' ).text( to );
-		} );
-	} );
+	// Constructor
+	app.init = function() {
+		app.cache();
 
-	// Header text color.
-	wp.customize( 'header_textcolor', function( value ) {
-		value.bind( function( to ) {
-			if ( 'blank' === to ) {
-				$( '.site-title a, .site-description' ).css( {
-					'clip': 'rect(1px, 1px, 1px, 1px)',
-					'position': 'absolute'
-				} );
-			} else {
-				$( '.site-title a, .site-description' ).css( {
-					'clip': 'auto',
-					'position': 'relative'
-				} );
-				$( '.site-title a, .site-description' ).css( {
-					'color': to
-				} );
-			}
-		} );
-	} );
-} )( jQuery );
+		if ( app.meetsRequirements() ) {
+			app.bindEvents();
+		}
+	};
+
+	// Cache all the things
+	app.cache = function() {
+		app.$c = {
+			window: $( window ),
+			headerButtonSelect: $( '#customize-control-_s_header_button select' ),
+			headerLinkButton: $( '#customize-control-_s_header_button_url' ),
+			headerLinkText: $( '#customize-control-_s_header_button_text' )
+		};
+	};
+
+	// Combine all events
+	app.bindEvents = function() {
+		app.$c.window.on( 'load', app.showLinkField );
+		app.$c.headerButtonSelect.on( 'change', app.showHideLinkField );
+	};
+
+	// Do we meet the requirements?
+	app.meetsRequirements = function() {
+		return app.$c.headerButtonSelect.length;
+	};
+
+	// Show/Hide the Link field when the select value changes.
+	app.showHideLinkField = function() {
+
+		if ( 'link' === app.$c.headerButtonSelect.val() ) {
+			app.$c.headerLinkButton.show();
+			app.$c.headerLinkText.show();
+		} else {
+			app.$c.headerLinkButton.hide();
+			app.$c.headerLinkText.hide();
+		}
+	};
+
+	// If the value is set and is already 'link', make sure the field is displayed.
+	app.showLinkField = function() {
+
+		if ( 'link' === app.$c.headerButtonSelect.val() ) {
+			app.$c.headerLinkButton.show();
+			app.$c.headerLinkText.show();
+		}
+	};
+
+	// Engage
+	$( app.init );
+
+})( window, jQuery, window.CustomizerHeaderOptions );

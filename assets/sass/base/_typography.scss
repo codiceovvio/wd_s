@@ -16,6 +16,13 @@ textarea {
 // Headers
 //--------------------------------------------------------------
 
+// Global Header Resets.
+@for $i from 1 through 6 {
+	h#{$i} {
+		margin-top: 0;
+	} // h#{$i}
+} // end @for
+
 h1,
 .h1 {
 
@@ -69,11 +76,11 @@ i {
 blockquote,
 q {
 	margin: 0 rem(24);
-	quotes: "" "";
+	quotes: '" "';
 
 	&::before,
 	&::after {
-		content: "";
+		content: '';
 	}  // &::before, &::after
 } // blockquote, q
 
@@ -82,13 +89,17 @@ address {
 } // address
 
 pre {
+	background-color: $color-gallery;
+	color: $color-cod-gray;
 	font-family: $font-pre;
-	font-size: rem(15);
+	font-size: rem(13);
 	line-height: $line-height-pre;
-	margin: 0 0 rem(24);
-	max-width: 100%;
+	margin: 0 0 rem(24) rem(-24);
 	overflow: auto;
 	padding: rem(24);
+	white-space: pre;
+	word-break: normal;
+	word-wrap: normal;
 } // pre
 
 code,
